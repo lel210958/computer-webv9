@@ -1,44 +1,24 @@
 <template>
-  <div class="home">
-    <div class="container">
-      <h1>🖥️ Vue版我的电脑</h1>
-      <p class="description">
-        基于Vue 3 + Vite的Web版Windows"我的电脑"应用<br>
-        现代化的前端技术栈，提供更好的用户体验
-      </p>
-
-      <div class="version-grid">
-        <div class="version-card">
-          <div class="version-title">🚀 Vue 3版本</div>
-          <div class="version-desc">
-            使用Vue 3 Composition API，响应式数据绑定，组件化开发
-          </div>
-          <router-link to="/computer" class="btn">打开Vue版本</router-link>
-        </div>
-
-        <div class="version-card">
-          <div class="version-title">⚡ 原版对比</div>
-          <div class="version-desc">
-            基于Spring Boot + FreeMarker + Template.js的传统实现
-          </div>
-          <a href="http://localhost:8080" class="btn" target="_blank">打开原版</a>
-        </div>
+  <div class="portal-home">
+    <header class="portal-header">
+      <div class="logo-area">
+        <span class="logo">🧩</span>
+        <span class="site-title">Web 插件门户</span>
       </div>
-
-      <div class="features">
-        <h3>🎯 功能特性</h3>
-        <ul>
-          <li>📁 左侧显示网络共享位置列表</li>
-          <li>📊 右侧展示分类统计信息</li>
-          <li>🗂️ 文件夹浏览和导航功能</li>
-          <li>🍞 面包屑导航显示当前路径</li>
-          <li>🎨 现代化UI设计，响应式布局</li>
-          <li>⚡ Vue 3响应式数据绑定</li>
-          <li>🔄 组件化开发，易于维护</li>
-          <li>🚀 Vite快速构建和热重载</li>
-        </ul>
+      <div class="welcome">欢迎使用你的 Web 插件应用中心</div>
+    </header>
+    <main class="portal-main">
+      <div class="apps-title">全部插件应用</div>
+      <div class="app-grid">
+        <div class="app-card">
+          <div class="app-icon">🗂️</div>
+          <div class="app-title">共享中心</div>
+          <div class="app-desc">访问和管理你的NAS/SMB网络共享文件</div>
+          <router-link to="/nas-demo" class="btn">进入共享中心</router-link>
+        </div>
+        <!-- 未来可扩展更多应用卡片 -->
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
@@ -49,90 +29,110 @@ export default {
 </script>
 
 <style scoped>
-.home {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  height: 100vh;
+.portal-home {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e3eefd 0%, #fafdff 100%);
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
 }
-
-.container {
+.portal-header {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 38px 0 28px 0;
   text-align: center;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  max-width: 600px;
+  box-shadow: 0 4px 18px rgba(30, 80, 200, 0.10);
 }
-
-h1 {
-  color: #333;
-  margin-bottom: 30px;
-  font-size: 2.5em;
-}
-
-.description {
-  color: #666;
-  margin-bottom: 30px;
-  line-height: 1.6;
-}
-
-.version-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.version-card {
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
-  padding: 20px;
-  transition: all 0.3s ease;
-}
-
-.version-card:hover {
-  border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.version-title {
-  font-size: 1.2em;
+.logo-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 2.2em;
   font-weight: bold;
-  color: #333;
   margin-bottom: 10px;
 }
-
-.version-desc {
-  font-size: 0.9em;
-  color: #666;
-  margin-bottom: 15px;
-  line-height: 1.4;
+.logo {
+  font-size: 1.5em;
 }
-
-.features {
-  text-align: left;
-  background: #f8f9fa;
+.site-title {
+  font-size: 1.1em;
+  letter-spacing: 2px;
+}
+.welcome {
+  font-size: 1.15em;
+  opacity: 0.92;
+  margin-top: 6px;
+}
+.portal-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0 60px 0;
+}
+.apps-title {
+  font-size: 1.3em;
+  color: #1976d2;
+  font-weight: 600;
+  margin-bottom: 32px;
+  letter-spacing: 1px;
+}
+.app-grid {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.app-card {
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 14px;
+  padding: 32px 36px 26px 36px;
+  transition: all 0.3s ease;
+  min-width: 220px;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+.app-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+}
+.app-icon {
+  font-size: 2.8em;
+  margin-bottom: 12px;
+}
+.app-title {
+  font-size: 1.18em;
+  font-weight: bold;
+  color: #1976d2;
+  margin-bottom: 8px;
+}
+.app-desc {
+  font-size: 0.98em;
+  color: #666;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+.btn {
+  background: linear-gradient(90deg, #e3eefd 0%, #c3d3ee 100%);
+  color: #1976d2;
+  border: none;
   border-radius: 10px;
-  padding: 20px;
-  margin-top: 20px;
+  padding: 8px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(30, 80, 200, 0.06);
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+  text-decoration: none;
+  display: inline-block;
 }
-
-.features h3 {
-  color: #333;
-  margin-bottom: 15px;
-}
-
-.features ul {
-  color: #666;
-  line-height: 1.6;
-}
-
-.features li {
-  margin-bottom: 5px;
+.btn:hover {
+  background: #d0e3fa;
+  color: #0d47a1;
+  box-shadow: 0 4px 16px rgba(30, 80, 200, 0.10);
 }
 </style> 

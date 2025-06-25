@@ -1,21 +1,8 @@
 server:
+  address: 192.168.95.101
   port: 8080
 
 spring:
-  freemarker:
-    template-loader-path: classpath:/templates/
-    suffix: .ftl
-    cache: false
-    charset: UTF-8
-    check-template-location: true
-    content-type: text/html
-    expose-request-attributes: false
-    expose-session-attributes: false
-    request-context-attribute: request
-    settings:
-      template_update_delay: 0
-      default_encoding: UTF-8
-      classic_compatible: true
   datasource:
     url: jdbc:mysql://localhost:9527/media_share_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: mss_user

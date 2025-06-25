@@ -1,26 +1,6 @@
 <template>
   <div class="nas-demo">
-    <div class="nas-header">
-      <div class="nas-title">文件站（网络共享位置演示）</div>
-    </div>
     <div class="nas-main">
-      <!-- 左侧网络位置列表 -->
-      <div class="nas-locations">
-        <div class="locations-title">网络位置</div>
-        <div v-if="loadingLocations" class="loading">正在加载网络位置...</div>
-        <div v-else-if="errorLocations" class="error">{{ errorLocations }}</div>
-        <ul v-else class="locations-list">
-          <li v-for="loc in networkLocations" :key="loc.ip + '-' + loc.name">
-            <div :class="['location-node', {active: isActive(loc)}]" @click="selectLocation(loc)">
-              <div class="location-icon">💻</div>
-              <div class="location-info">
-                <div class="location-name">{{ loc.name }}</div>
-                <div class="location-details">{{ loc.ip }} ({{ loc.user }})</div>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
       <!-- 右侧内容区 -->
       <div class="nas-content">
         <div v-if="!currentLocation" class="empty-tip">请选择左侧网络位置</div>
@@ -447,88 +427,10 @@ export default {
   display: flex;
   flex-direction: column;
 }
-.nas-header {
-  background: linear-gradient(90deg, #1976d2 0%, #63a4ff 100%);
-  color: #fff;
-  padding: 16px 24px;
-  font-size: 1.2em;
-  font-weight: 600;
-  letter-spacing: 1px;
-  box-shadow: 0 2px 12px rgba(30, 80, 200, 0.10);
-}
-.nas-title {
-  font-size: 1.2em;
-}
 .nas-main {
   flex: 1;
   display: flex;
   min-height: 0;
-}
-.nas-locations {
-  width: 240px;
-  background: #f8fafc;
-  border-right: 1px solid #dde3ec;
-  box-shadow: 2px 0 8px rgba(30, 80, 200, 0.04);
-  padding: 18px 0 0 0;
-}
-.locations-title {
-  font-size: 1em;
-  color: #1976d2;
-  font-weight: 600;
-  padding: 0 18px 8px 18px;
-}
-.locations-list {
-  list-style: none;
-  padding: 0 0 0 8px;
-  margin: 0;
-}
-.location-node {
-  display: flex;
-  align-items: center;
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1em;
-  color: #222;
-  margin-bottom: 2px;
-  transition: background 0.15s;
-}
-.location-node.active, .location-node:hover {
-  background: #e3f2fd;
-  color: #1976d2;
-}
-.location-icon {
-  width: 32px;
-  height: 32px;
-  background: #e3eefd;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  color: #1976d2;
-  font-size: 1.4em;
-  box-shadow: 0 1px 4px rgba(30, 80, 200, 0.04);
-}
-.location-info {
-  flex: 1;
-  min-width: 0;
-}
-.location-name {
-  font-weight: 500;
-  color: #222;
-  margin-bottom: 2px;
-  font-size: 1.08em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.location-details {
-  font-size: 0.92em;
-  color: #6a7ba2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .nas-content {
   flex: 1;
