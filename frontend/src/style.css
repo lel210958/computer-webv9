@@ -1,0 +1,126 @@
+body {
+  font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+  background: #f3f6fb;
+  color: #222;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: #e9eef5;
+}
+::-webkit-scrollbar-thumb {
+  background: #c3d3ee;
+  border-radius: 6px;
+  border: 2px solid #e9eef5;
+  min-height: 40px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a5bfe7;
+}
+::-webkit-scrollbar-corner {
+  background: #e9eef5;
+}
+
+/* 统一按钮风格 */
+button, .btn {
+  background: linear-gradient(90deg, #e3eefd 0%, #c3d3ee 100%);
+  color: #1976d2;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(30, 80, 200, 0.06);
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+button:hover, .btn:hover {
+  background: #d0e3fa;
+  color: #0d47a1;
+  box-shadow: 0 4px 16px rgba(30, 80, 200, 0.10);
+}
+
+/* 卡片通用样式 */
+.card, .category-card, .info-box {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(30, 80, 200, 0.08);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.18s, background 0.18s;
+}
+
+/* 侧边栏通用样式 */
+.sidebar {
+  background: #f8fafc;
+  border-right: 1px solid #e3e8f0;
+  box-shadow: 2px 0 8px rgba(30, 80, 200, 0.04);
+  border-radius: 0 16px 16px 0;
+  transition: box-shadow 0.18s, background 0.18s;
+}
+
+/* 内容区通用样式 */
+.content-area {
+  background: #fafdff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(30, 80, 200, 0.07);
+  transition: box-shadow 0.18s, background 0.18s;
+}
+
+/* 面包屑统一风格 */
+.breadcrumb {
+  background: #f3f6fb;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(30, 80, 200, 0.04);
+  padding: 10px 18px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.18s, background 0.18s;
+}
+
+/* 统一文件夹/文件图标大小 */
+.folder-icon, .category-icon, .location-icon {
+  font-size: 2.2em !important;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3eefd;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: background 0.18s;
+}
+
+/* 统一高亮色 */
+.location-item.active, .folder-item:hover {
+  background: #e3f2fd !important;
+  border-left: 4px solid #1976d2 !important;
+  box-shadow: 0 4px 16px rgba(30, 80, 200, 0.10) !important;
+}
+
+/* 统一字体加粗 */
+.location-name, .content-title, .folder-name {
+  font-weight: 500;
+}
+
+/* 响应式优化 */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 0 0 16px 16px !important;
+  }
+  .main-container {
+    flex-direction: column !important;
+  }
+  .content-area {
+    border-radius: 18px 18px 0 0;
+  }
+} 

@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  freemarker:
+    template-loader-path: classpath:/templates/
+    suffix: .ftl
+    cache: false
+    charset: UTF-8
+    check-template-location: true
+    content-type: text/html
+    expose-request-attributes: false
+    expose-session-attributes: false
+    request-context-attribute: request
+    settings:
+      template_update_delay: 0
+      default_encoding: UTF-8
+      classic_compatible: true
+  datasource:
+    url: jdbc:mysql://localhost:9527/media_share_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: mss_user
+    password: lel@210958_MS
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  mybatis:
+    mapper-locations: classpath:/mapper/*.xml
+    type-aliases-package: com.example.computerweb.model
+    configuration:
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 使用控制台输出
+
+logging:
+  level:
+    # 设置 MyBatis 相关包的日志级别为 DEBUG
+    com.example.computerweb.mapper: DEBUG  # 你的 Mapper 接口所在包
+    org.mybatis: DEBUG
+    org.apache.ibatis: DEBUG
+    java.sql: DEBUG
+    java.sql.Statement: DEBUG
+    java.sql.PreparedStatement: DEBUG
+    java.sql.ResultSet: DEBUG

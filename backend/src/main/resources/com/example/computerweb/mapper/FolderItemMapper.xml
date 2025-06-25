@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.computerweb.mapper.FolderItemMapper">
+    <select id="selectByLocationAndParentPath" resultType="com.example.computerweb.entity.FolderItem">
+        SELECT 
+            id,
+            file_name AS fileName,
+            file_path AS filePath,
+            parent_path AS parentPath,
+            file_size AS fileSize,
+            fileType,
+            network_share_location AS networkShareLocation,
+            last_modify AS lastModify,
+            sync_time AS syncTime,
+            statis_date AS statisDate,
+            is_directory AS isDirectory
+        FROM mss_file
+        WHERE network_share_location = #{networkShareLocation}
+          AND parent_path = #{parentPath}
+        ORDER BY is_directory DESC, file_name ASC
+    </select>
+</mapper> 
