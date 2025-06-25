@@ -16,7 +16,12 @@
           <div class="app-desc">访问和管理你的NAS/SMB网络共享文件</div>
           <router-link to="/nas-demo" class="btn">进入共享中心</router-link>
         </div>
-        <!-- 未来可扩展更多应用卡片 -->
+        <div class="app-card">
+          <div class="app-icon">🔍</div>
+          <div class="app-title">网络共享位置扫描</div>
+          <div class="app-desc">扫描并检测指定的网络共享位置</div>
+          <router-link to="/network-scan" class="btn">进入扫描</router-link>
+        </div>
       </div>
     </main>
   </div>

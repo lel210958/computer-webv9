@@ -66,6 +66,13 @@ export const networkAPI = {
       networkLocation,
       filePath
     })
+  },
+
+  // 网络共享位置扫描
+  networkScan(networkLocation) {
+    return api.post('/smc/api/network-location/scan', {
+      networkLocation
+    })
   }
 }
 

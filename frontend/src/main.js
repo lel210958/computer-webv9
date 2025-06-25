@@ -5,11 +5,13 @@ import Home from './views/Home.vue'
 import NasExplorerDemo from './views/NasExplorerDemo.vue'
 import CategoryFiles from './views/CategoryFiles.vue'
 import MainLayout from './components/MainLayout.vue'
+import NetworkScan from './views/NetworkScan.vue'
 import './style.css'
 
 // 路由配置
 const routes = [
   { path: '/', component: Home },
+  { path: '/network-scan', component: NetworkScan },
   {
     path: '/',
     component: MainLayout,

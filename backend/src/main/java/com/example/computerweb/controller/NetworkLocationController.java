@@ -30,7 +30,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/smc/api")
@@ -173,5 +175,15 @@ public class NetworkLocationController {
         } finally {
             pool.returnObject(session);
         }
+    }
+
+    @PostMapping("/network-location/scan")
+    @ResponseBody
+    public Map<String, Object> scanNetworkLocation(@RequestBody Map<String, Object> request) {
+        Map<String, Object> networkLocation = (Map<String, Object>) request.get("networkLocation");
+        Map<String, Object> result = new HashMap<>();
+        result.put("networkLocation", networkLocation);
+        result.put("scanStatus", "SUCCESS");
+        return result;
     }
 }
