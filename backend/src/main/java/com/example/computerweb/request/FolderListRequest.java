@@ -1,24 +1,22 @@
 package com.example.computerweb.request;
 
-import com.example.computerweb.model.NetworkLocation;
-
 public class FolderListRequest {
-    private NetworkLocation networkLocation;
+    private Integer networkLocationId;
     private String currentPath;
 
     public FolderListRequest() {}
 
-    public FolderListRequest(NetworkLocation networkLocation, String currentPath) {
-        this.networkLocation = networkLocation;
+    public FolderListRequest(Integer networkLocationId, String currentPath) {
+        this.networkLocationId = networkLocationId;
         this.currentPath = currentPath;
     }
 
-    public NetworkLocation getNetworkLocation() {
-        return networkLocation;
+    public Integer getNetworkLocationId() {
+        return networkLocationId;
     }
 
-    public void setNetworkLocation(NetworkLocation networkLocation) {
-        this.networkLocation = networkLocation;
+    public void setNetworkLocationId(Integer networkLocationId) {
+        this.networkLocationId = networkLocationId;
     }
 
     public String getCurrentPath() {

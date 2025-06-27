@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.computerweb.mapper.NetworkLocationMapper">
+    
+    <select id="selectAll" resultType="com.example.computerweb.entity.NetworkLocationEntity">
+        SELECT 
+            id,
+            ip,
+            path,
+            user_name AS userName,
+            pwd,
+            create_time AS createTime
+        FROM mss_network_location
+        ORDER BY id ASC
+    </select>
+    
+    <select id="selectById" resultType="com.example.computerweb.entity.NetworkLocationEntity">
+        SELECT 
+            id,
+            ip,
+            path,
+            user_name AS userName,
+            pwd,
+            create_time AS createTime
+        FROM mss_network_location
+        WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" parameterType="com.example.computerweb.entity.NetworkLocationEntity" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mss_network_location (
+            ip,
+            path,
+            user_name,
+            pwd,
+            create_time
+        ) VALUES (
+            #{ip},
+            #{path},
+            #{userName},
+            #{pwd},
+            NOW()
+        )
+    </insert>
+    
+    <update id="update" parameterType="com.example.computerweb.entity.NetworkLocationEntity">
+        UPDATE mss_network_location SET
+            ip = #{ip},
+            path = #{path},
+            user_name = #{userName},
+            pwd = #{pwd}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM mss_network_location 
+        WHERE id = #{id}
+    </delete>
+    
+</mapper> 

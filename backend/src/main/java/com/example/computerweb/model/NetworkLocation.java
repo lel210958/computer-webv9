@@ -1,6 +1,7 @@
 package com.example.computerweb.model;
 
 public class NetworkLocation {
+    private Integer id;
     private String ip;
     private String name;
     private String user;
@@ -12,7 +13,23 @@ public class NetworkLocation {
         this.ip = ip;
         this.name = name;
         this.user = user;
-        this.pwd = pwd;
+        this.pwd = pwd != null ? pwd : "";
+    }
+
+    public NetworkLocation(Integer id, String ip, String name, String user, String pwd) {
+        this.id = id;
+        this.ip = ip;
+        this.name = name;
+        this.user = user;
+        this.pwd = pwd != null ? pwd : "";
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getIp() {
@@ -44,6 +61,6 @@ public class NetworkLocation {
     }
 
     public void setPwd(String pwd) {
-        this.pwd = pwd;
+        this.pwd = pwd != null ? pwd : "";
     }
 } 

@@ -58,10 +58,7 @@ export default {
       scanResult.value = null
       error.value = ''
       try {
-        const res = await networkAPI.networkScan({
-          ip: selectedLocation.value.ip,
-          name: selectedLocation.value.name
-        })
+        const res = await networkAPI.networkScan(selectedLocation.value.id)
         scanResult.value = res
       } catch (e) {
         error.value = '扫描失败，请重试'

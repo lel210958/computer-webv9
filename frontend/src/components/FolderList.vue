@@ -1,122 +1,123 @@
 <template>
   <div class="folder-list">
-    <!-- 排序控制栏 -->
-    <div class="sort-controls">
-      <div class="sort-label">排序方式:</div>
-      <select v-model="sortField" class="sort-select">
-        <option value="name">名称</option>
-        <option value="time">时间</option>
-        <option value="size">大小</option>
-      </select>
-      <button 
-        class="sort-btn" 
-        @click="toggleSortOrder"
-        :title="sortOrder === 'asc' ? '升序' : '降序'"
-      >
-        {{ sortOrder === 'asc' ? '↑' : '↓' }}
-      </button>
+    <div class="list-header">
+      <div class="view-controls">
+        <button :class="{active: viewMode === 'icon'}" @click="viewMode = 'icon'">图标视图</button>
+        <button :class="{active: viewMode === 'list'}" @click="viewMode = 'list'">列表视图</button>
+      </div>
+      <div class="sort-controls">
+        <span>排序:</span>
+        <select v-model="sortField">
+          <option value="name">名称</option>
+          <option value="time">时间</option>
+          <option value="size">大小</option>
+        </select>
+        <button class="sort-btn" @click="toggleSortOrder">
+          <i class="bi" :class="sortOrder === 'asc' ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+        </button>
+      </div>
     </div>
-
-    <div v-if="loading" class="loading">正在加载文件夹列表...</div>
+    
+    <div v-if="loading" class="loading">正在加载...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else-if="sortedFolderList.length === 0" class="loading">当前目录为空</div>
-    <div v-else class="folder-grid">
-      <div
-        v-for="folder in sortedFolderList"
-        :key="folder.filePath"
-        class="folder-item"
-        @click="handleFolderClick(folder)"
-      >
-        <div class="folder-icon">
-          {{ getFolderIcon(folder) }}
-        </div>
-        <div class="folder-name">{{ folder.fileName }}</div>
-        <div class="folder-info">
-          {{ folder.isDirectory == 1 ? '文件夹' : `${formatFileSize(folder.fileSize)}` }}
-        </div>
-        <div class="folder-time" v-if="folder.lastModify">
-          {{ formatTime(folder.lastModify) }}
+    <div v-else-if="sortedFolders.length === 0" class="empty">当前目录为空</div>
+    <div v-else>
+      <!-- 图标视图 -->
+      <div v-if="viewMode === 'icon'" class="icon-view">
+        <div 
+          v-for="folder in sortedFolders" 
+          :key="folder.filePath" 
+          class="icon-card" 
+          @click="handleItemClick(folder)"
+        >
+          <div class="icon-img">
+            <i :class="getFileIcon(folder)"></i>
+          </div>
+          <div class="icon-name">{{ folder.fileName }}</div>
         </div>
       </div>
+      
+      <!-- 列表视图 -->
+      <table v-else class="list-view">
+        <thead>
+          <tr>
+            <th></th>
+            <th>名称</th>
+            <th>类型</th>
+            <th>大小</th>
+            <th>修改时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            v-for="folder in sortedFolders" 
+            :key="folder.filePath" 
+            @click="handleItemClick(folder)"
+            class="folder-row"
+          >
+            <td class="folder-icon">
+              <i :class="getFileIcon(folder)"></i>
+            </td>
+            <td class="folder-name">{{ folder.fileName }}</td>
+            <td class="folder-type">{{ folder.isDirectory == 1 ? '文件夹' : '文件' }}</td>
+            <td class="folder-size">{{ folder.isDirectory == 1 ? '-' : formatFileSize(folder.fileSize) }}</td>
+            <td class="folder-time">{{ formatTime(folder.lastModify) }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, watch, computed } from 'vue'
-import { networkAPI } from '../api'
+import { ref, computed } from 'vue'
 
 export default {
   name: 'FolderList',
   props: {
-    networkLocation: {
-      type: Object,
+    folders: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    error: {
+      type: String,
       default: null
-    },
-    currentPath: {
-      type: String,
-      default: ''
-    },
-    filterType: {
-      type: String,
-      default: ''
     }
   },
-  emits: ['folder-click'],
+  emits: ['item-click'],
   setup(props, { emit }) {
-    const folderListRaw = ref([])
-    const loading = ref(false)
-    const error = ref(null)
+    const viewMode = ref('icon')
+    const sortField = ref('name')
+    const sortOrder = ref('asc')
     
-    // 排序相关状态
-    const sortField = ref('name') // 排序字段：name, time, size
-    const sortOrder = ref('asc')  // 排序方向：asc, desc
-
-    const typeMap = {
-      'doc': ['DOCUMENT'],
-      'image': ['IMAGE'],
-      'video': ['VIDEO'],
-      'music': ['MUSIC'],
-      'zip': ['ZIP']
-    }
-
-    // 计算排序后的文件夹列表
-    const sortedFolderList = computed(() => {
-      let filteredList = folderListRaw.value
-      
-      // 先按分类过滤
-      if (props.filterType) {
-        filteredList = filteredList.filter(item =>
-          item.isDirectory === '1' ||
-          (typeMap[props.filterType] && typeMap[props.filterType].includes(item.fileType))
-        )
-      }
-      
-      // 然后排序
-      return filteredList.sort((a, b) => {
+    const sortedFolders = computed(() => {
+      const arr = [...props.folders]
+      return arr.sort((a, b) => {
         let aValue, bValue
-        
         switch (sortField.value) {
           case 'name':
-            aValue = a.fileName.toLowerCase()
-            bValue = b.fileName.toLowerCase()
+            aValue = a.fileName?.toLowerCase() || ''
+            bValue = b.fileName?.toLowerCase() || ''
             break
           case 'time':
             aValue = new Date(a.lastModify || 0).getTime()
             bValue = new Date(b.lastModify || 0).getTime()
             break
           case 'size':
-            // 文件夹排在前面，然后按大小排序
-            if (a.isDirectory === '1' && b.isDirectory !== '1') return -1
-            if (a.isDirectory !== '1' && b.isDirectory === '1') return 1
-            aValue = a.isDirectory === '1' ? 0 : (parseInt(a.fileSize) || 0)
-            bValue = b.isDirectory === '1' ? 0 : (parseInt(b.fileSize) || 0)
+            // 文件夹排前面
+            if (a.isDirectory == 1 && b.isDirectory != 1) return -1
+            if (a.isDirectory != 1 && b.isDirectory == 1) return 1
+            aValue = a.isDirectory == 1 ? 0 : (parseInt(a.fileSize) || 0)
+            bValue = b.isDirectory == 1 ? 0 : (parseInt(b.fileSize) || 0)
             break
           default:
-            aValue = a.fileName.toLowerCase()
-            bValue = b.fileName.toLowerCase()
+            aValue = a.fileName?.toLowerCase() || ''
+            bValue = b.fileName?.toLowerCase() || ''
         }
-        
         if (sortOrder.value === 'asc') {
           return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
         } else {
@@ -124,54 +125,30 @@ export default {
         }
       })
     })
-
-    const filterFolders = () => {
-      // 过滤逻辑已移到computed中
-    }
-
-    const loadFolderList = async () => {
-      if (!props.networkLocation) {
-        folderListRaw.value = []
-        return
-      }
-
-      try {
-        loading.value = true
-        error.value = null
-        const data = await networkAPI.getFolderList(props.networkLocation, props.currentPath)
-        folderListRaw.value = data.folderList || []
-      } catch (err) {
-        error.value = '加载文件夹列表失败'
-        console.error('加载文件夹列表失败:', err)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const handleFolderClick = (folder) => {
-      emit('folder-click', folder)
-    }
-
-    const getFolderIcon = (folder) => {
-      if (folder.isDirectory == 1) {
-        return '📂'
-      }
-      const iconMap = {
-        'VIDEO': '🎥',
-        'IMAGE': '🖼️',
-        'DOCUMENT': '📄',
-        'MUSIC': '🎵',
-        'ZIP': '🗜️'
-      }
-      return iconMap[folder.fileType] || '📄'
-    }
-
-    // 切换排序方向
+    
     const toggleSortOrder = () => {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
     }
-
-    // 格式化文件大小
+    
+    const handleItemClick = (folder) => {
+      emit('item-click', folder)
+    }
+    
+    const getFileIcon = (folder) => {
+      if (folder.isDirectory == 1) {
+        return 'bi bi-folder-fill'
+      }
+      
+      const iconMap = {
+        'VIDEO': 'bi bi-camera-video-fill',
+        'IMAGE': 'bi bi-image-fill',
+        'DOCUMENT': 'bi bi-file-earmark-text-fill',
+        'MUSIC': 'bi bi-music-note-beamed',
+        'ZIP': 'bi bi-file-earmark-zip-fill'
+      }
+      return iconMap[folder.fileType] || 'bi bi-file-earmark-fill'
+    }
+    
     const formatFileSize = (size) => {
       if (!size || size === 0) return '0 B'
       const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -183,39 +160,20 @@ export default {
       }
       return `${fileSize.toFixed(1)} ${units[index]}`
     }
-
-    // 格式化时间
-    const formatTime = (timeStr) => {
-      if (!timeStr) return ''
-      const date = new Date(timeStr)
-      return date.toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+    
+    const formatTime = (time) => {
+      if (!time) return '-'
+      return new Date(time).toLocaleString('zh-CN')
     }
-
-    // 监听网络位置、路径、分类变化
-    watch([
-      () => props.networkLocation,
-      () => props.currentPath,
-      () => props.filterType
-    ], () => {
-      loadFolderList()
-    }, { immediate: true })
-
+    
     return {
-      folderListRaw,
-      sortedFolderList,
-      loading,
-      error,
+      viewMode,
       sortField,
       sortOrder,
-      handleFolderClick,
-      getFolderIcon,
+      sortedFolders,
       toggleSortOrder,
+      handleItemClick,
+      getFileIcon,
       formatFileSize,
       formatTime
     }
@@ -224,30 +182,62 @@ export default {
 </script>
 
 <style scoped>
+/* 引入Bootstrap Icons */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
 .folder-list {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(30, 80, 200, 0.07);
+}
+
+.list-header {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e3e8f0;
+}
+
+.view-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.view-controls button {
+  background: #fff;
+  border: 1.5px solid #e3e8f0;
+  color: #1976d2;
+  border-radius: 8px;
+  padding: 6px 18px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border 0.15s;
+}
+
+.view-controls button.active,
+.view-controls button:hover {
+  background: #e3f2fd;
+  color: #0d47a1;
+  border-color: #1976d2;
 }
 
 .sort-controls {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 1px solid #e3e8f0;
-  box-shadow: 0 1px 4px rgba(30, 80, 200, 0.04);
 }
 
-.sort-label {
-  font-size: 0.95em;
+.sort-controls span {
+  font-size: 0.98em;
   color: #1976d2;
   font-weight: 500;
 }
 
-.sort-select {
+.sort-controls select {
   padding: 6px 12px;
   border: 1px solid #dde3ec;
   border-radius: 6px;
@@ -258,7 +248,7 @@ export default {
   transition: border-color 0.15s;
 }
 
-.sort-select:focus {
+.sort-controls select:focus {
   outline: none;
   border-color: #1976d2;
 }
@@ -285,93 +275,108 @@ export default {
   color: #0d47a1;
 }
 
-.folder-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 22px;
-  margin-bottom: 30px;
-  padding: 10px 0 10px 0;
-}
-
-.folder-item {
+.icon-view {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 18px 8px 12px 8px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: box-shadow 0.18s, background 0.18s, border 0.18s;
-  border: 2px solid transparent;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(30, 80, 200, 0.06);
-  position: relative;
-  min-height: 120px;
+  flex-wrap: wrap;
+  gap: 22px;
 }
 
-.folder-item:hover {
+.icon-card {
+  width: 110px;
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(30, 80, 200, 0.07);
+  padding: 18px 8px 12px 8px;
+  text-align: center;
+  transition: box-shadow 0.18s, background 0.18s;
+  cursor: pointer;
+}
+
+.icon-card:hover {
   background: #e3f2fd;
-  border-color: #1976d2;
   box-shadow: 0 4px 16px rgba(30, 80, 200, 0.13);
 }
 
-.folder-icon {
-  width: 54px;
-  height: 54px;
-  margin-bottom: 10px;
+.icon-img {
+  font-size: 2.4em;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.3em;
-  border-radius: 12px;
-  background: #e3eefd;
-  box-shadow: 0 1px 4px rgba(30, 80, 200, 0.04);
+  height: 48px;
+  color: #1976d2;
 }
 
-.folder-name {
+.icon-name {
   font-size: 1em;
   color: #222;
-  text-align: center;
-  word-break: break-word;
-  margin-bottom: 4px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 100%;
 }
 
-.folder-info {
-  font-size: 0.88em;
-  color: #6a7ba2;
+.list-view {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1em;
+}
+
+.list-view th,
+.list-view td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e3e8f0;
+  text-align: left;
+}
+
+.list-view th {
+  background: #f3f6fb;
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.folder-row {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.folder-row:hover {
+  background: #f3f6fb;
+}
+
+.folder-icon {
+  width: 36px;
   text-align: center;
-  margin-bottom: 2px;
+  color: #1976d2;
+}
+
+.folder-name {
+  font-weight: 500;
+}
+
+.folder-type {
+  color: #666;
+}
+
+.folder-size {
+  color: #666;
 }
 
 .folder-time {
-  font-size: 0.8em;
-  color: #8ca0c8;
-  text-align: center;
+  color: #666;
+  font-size: 0.9em;
 }
 
-.loading, .error {
+.loading,
+.error,
+.empty {
   text-align: center;
-  padding: 40px;
   color: #888;
+  padding: 40px 0;
+  font-size: 1.1em;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .sort-controls {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .sort-label {
-    font-size: 0.9em;
-  }
-  
-  .sort-select {
-    font-size: 0.85em;
-  }
+.error {
+  color: #ff0000;
 }
 </style> 

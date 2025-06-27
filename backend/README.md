@@ -2,6 +2,71 @@
 
 这是一个基于Spring Boot + FreeMarker + Template.js的Web版Windows"我的电脑"应用，采用**视图与数据分离**的架构设计。
 
+## 🗄️ 数据库配置
+
+### 1. 创建数据库
+```sql
+CREATE DATABASE media_share_system CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+```
+
+### 2. 初始化数据库表
+运行 `init-database.sql` 脚本或执行以下SQL：
+
+```sql
+-- 创建网络共享位置表
+CREATE TABLE IF NOT EXISTS `mss_network_location` (
+	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`ip` VARCHAR(32) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+	`path` VARCHAR(255) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+	`user_name` VARCHAR(128) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+	`pwd` VARCHAR(128) NULL DEFAULT NULL COLLATE 'utf8mb4_unicode_ci',
+	`create_time` DATETIME NOT NULL,
+	PRIMARY KEY (`id`) USING BTREE
+)
+COMMENT='网络共享位置'
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB;
+
+-- 创建文件信息表
+CREATE TABLE IF NOT EXISTS `mss_file` (
+	`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`file_name` VARCHAR(255) NOT NULL COMMENT '文件名' COLLATE 'utf8mb4_unicode_ci',
+	`file_path` VARCHAR(2048) NOT NULL COMMENT '文件路径' COLLATE 'utf8mb4_unicode_ci',
+	`parent_path` VARCHAR(2048) NOT NULL COMMENT '上级路径' COLLATE 'utf8mb4_unicode_ci',
+	`file_size` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0' COMMENT '文件大小，单位字节',
+	`fileType` VARCHAR(32) NOT NULL COMMENT '文件类型' COLLATE 'utf8mb4_unicode_ci',
+	`network_location_id` INT(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT '网络共享位置id',
+	`last_modify` DATETIME NOT NULL COMMENT '最近修改时间',
+	`sync_time` DATETIME NOT NULL COMMENT '同步时间',
+	`statis_date` DATE NOT NULL COMMENT '分区日期',
+	`is_directory` TINYINT(4) UNSIGNED NOT NULL COMMENT '是否是文件夹',
+	PRIMARY KEY (`id`) USING BTREE,
+	KEY `idx_network_location_id` (`network_location_id`),
+	KEY `idx_parent_path` (`parent_path`),
+	KEY `idx_file_path` (`file_path`)
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB;
+
+-- 插入示例网络位置数据
+INSERT INTO `mss_network_location` (`ip`, `path`, `user_name`, `pwd`, `create_time`) VALUES
+('192.168.95.100', 'shareSpace', 'lel0958_share', 'lel@210958_SH', NOW()),
+('192.168.95.100', '学习资料', 'lel0958_share', 'lel@210958_SH', NOW())
+ON DUPLICATE KEY UPDATE `create_time` = NOW();
+```
+
+### 3. 配置数据库连接
+在 `application.yml` 中配置数据库连接信息：
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:9527/media_share_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: mss_user
+    password: lel@210958_MS
+    driver-class-name: com.mysql.cj.jdbc.Driver
+```
+
 ## 🎯 架构设计
 
 ### 核心原则
@@ -26,17 +91,20 @@
 ## 功能特性
 
 - 🖥️ 模拟Windows"我的电脑"界面
-- 📁 左侧显示网络共享位置列表
+- 📁 左侧显示网络共享位置列表（从数据库读取）
 - 🎨 现代化的UI设计
 - 📱 响应式布局
 - ⚡ 使用Template.js进行模板渲染
 - 📊 分类统计信息展示
 - 🗂️ 文件夹浏览和导航
 - 🔄 视图与数据分离架构
+- 🗄️ 数据库驱动的网络位置管理
 
 ## 技术栈
 
 - **后端**: Spring Boot 2.7.14
+- **数据库**: MySQL 8.0+
+- **ORM**: MyBatis
 - **模板引擎**: FreeMarker
 - **前端模板**: Template.js (art-template)
 - **样式**: CSS3 + Flexbox + Grid
@@ -53,28 +121,39 @@ computer-webv9/
 │       │   └── com/example/computerweb/
 │       │       ├── ComputerWebApplication.java
 │       │       ├── controller/
-│       │       │   └── ComputerController.java
-│       │       └── model/
-│       │           ├── NetworkLocation.java
-│       │           ├── NetworkLocationResponse.java
-│       │           ├── CategoryCount.java
-│       │           ├── CategoryCountRequest.java
-│       │           ├── CategoryCountResponse.java
-│       │           ├── FolderItem.java
-│       │           ├── FolderListRequest.java
-│       │           └── FolderListResponse.java
+│       │       │   └── NetworkLocationController.java
+│       │       ├── entity/
+│       │       │   ├── FolderItem.java
+│       │       │   └── NetworkLocationEntity.java
+│       │       ├── mapper/
+│       │       │   ├── FolderItemMapper.java
+│       │       │   └── NetworkLocationMapper.java
+│       │       ├── model/
+│       │       │   ├── NetworkLocation.java
+│       │       │   ├── NetworkLocationResponse.java
+│       │       │   ├── CategoryCount.java
+│       │       │   ├── CategoryCountRequest.java
+│       │       │   ├── CategoryCountResponse.java
+│       │       │   ├── FolderListRequest.java
+│       │       │   └── FolderListResponse.java
+│       │       ├── service/
+│       │       │   ├── FileScanService.java
+│       │       │   ├── FolderItemService.java
+│       │       │   ├── NetworkLocationService.java
+│       │       │   └── impl/
+│       │       │       ├── FileScanServiceImpl.java
+│       │       │       ├── FolderItemServiceImpl.java
+│       │       │       └── NetworkLocationServiceImpl.java
+│       │       └── utils/
+│       │           └── FileUtils.java
 │       └── resources/
 │           ├── application.yml
-│           ├── static/
-│           │   └── js/
-│           │       └── templates/
-│           │           ├── location-template.js
-│           │           ├── category-template.js
-│           │           ├── folder-template.js
-│           │           └── template-manager.js
-│           └── templates/
-│               ├── index.ftl
-│               └── computer.ftl
+│           ├── sql/
+│           │   └── create_table.sql
+│           └── com/example/computerweb/mapper/
+│               ├── FolderItemMapper.xml
+│               └── NetworkLocationMapper.xml
+├── init-database.sql
 ├── pom.xml
 └── README.md
 ```
@@ -85,8 +164,19 @@ computer-webv9/
 
 - Java 8+
 - Maven 3.6+
+- MySQL 8.0+
 
-### 2. 运行项目
+### 2. 数据库初始化
+
+```bash
+# 创建数据库
+mysql -u root -p -e "CREATE DATABASE media_share_system CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+
+# 初始化表结构
+mysql -u root -p media_share_system < init-database.sql
+```
+
+### 3. 运行项目
 
 ```bash
 # 克隆项目
@@ -100,7 +190,7 @@ mvn clean compile
 mvn spring-boot:run
 ```
 
-### 3. 访问应用
+### 4. 访问应用
 
 - 主页: http://localhost:8080
 - 我的电脑: http://localhost:8080/computer
@@ -117,13 +207,13 @@ mvn spring-boot:run
 {
   "networkLocationList": [
     {
-      "ip": "192.168.95.101",
+      "ip": "192.168.95.100",
       "name": "shareSpace",
       "user": "lel0958_share",
       "pwd": ""
     },
     {
-      "ip": "192.168.95.101",
+      "ip": "192.168.95.100",
       "name": "学习资料",
       "user": "lel0958_share",
       "pwd": ""
@@ -139,19 +229,13 @@ mvn spring-boot:run
 - **请求参数**: 
 ```json
 {
-  "networkLocation": {
-    "ip": "192.168.95.101",
-    "name": "shareSpace"
-  }
+  "networkLocationId": 1
 }
 ```
 - **响应格式**: JSON
 ```json
 {
-  "networkLocation": {
-    "ip": "192.168.95.101",
-    "name": "shareSpace"
-  },
+  "networkLocationId": 1,
   "categoryCount": [
     {
       "type": "video",
@@ -184,20 +268,14 @@ mvn spring-boot:run
 - **请求参数**: 
 ```json
 {
-  "networkLocation": {
-    "ip": "192.168.95.101",
-    "name": "shareSpace"
-  },
+  "networkLocationId": 1,
   "currentPath": ""
 }
 ```
 - **响应格式**: JSON
 ```json
 {
-  "networkLocation": {
-    "ip": "192.168.95.101",
-    "name": "shareSpace"
-  },
+  "networkLocationId": 1,
   "folderList": [
     {
       "fileName": "apps",
@@ -226,6 +304,75 @@ mvn spring-boot:run
   ]
 }
 ```
+
+### 4. 扫描网络位置
+
+- **URL**: `/smc/api/network-location/scan`
+- **方法**: POST
+- **请求参数**: 
+```json
+{
+  "networkLocationId": 1
+}
+```
+- **响应格式**: JSON
+```json
+{
+  "networkLocationId": 1,
+  "scanStatus": "SUCCESS",
+  "scannedFiles": 150,
+  "existingFiles": 120,
+  "newFiles": 30,
+  "updatedFiles": 5,
+  "deletedFiles": 2,
+  "message": "扫描完成"
+}
+```
+
+**功能说明**:
+- 扫描指定网络共享位置下的所有文件和文件夹
+- 自动同步到数据库：新增不存在的文件记录，更新已修改的文件记录，删除已不存在的文件记录
+- 支持递归扫描子目录
+- 自动识别文件类型（VIDEO、IMAGE、MUSIC、DOCUMENT、ZIP、OTHER）
+- 记录文件大小、修改时间等信息
+
+### 5. 文件流式播放
+
+- **URL**: `/smc/api/network-location/stream`
+- **方法**: GET
+- **请求参数**: 
+  - `networkLocationId`: 网络位置ID
+  - `filePath`: 文件路径
+- **功能**: 支持视频和图片的流式播放，支持断点续传
+
+### 6. 添加网络位置
+
+- **URL**: `/smc/api/network-location/add`
+- **方法**: POST
+- **请求参数**: 
+```json
+{
+  "ip": "192.168.95.100",
+  "path": "shareSpace",
+  "userName": "lel0958_share",
+  "pwd": "lel@210958_SH"
+}
+```
+- **响应格式**: JSON
+```json
+{
+  "success": true,
+  "message": "网络位置添加成功",
+  "id": 3
+}
+```
+
+**功能说明**:
+- 添加新的网络共享位置配置到数据库
+- 支持IP地址、共享名称、用户名和密码配置
+- 自动验证必填字段（IP地址、共享名称、用户名）
+- 密码字段为可选，为空时使用空字符串
+- 返回添加结果和新创建的网络位置ID
 
 ### 页面路由
 
@@ -286,6 +433,106 @@ mvn spring-boot:run
 - 服务器端口: `server.port`
 - FreeMarker模板配置: `spring.freemarker.*`
 
+## 测试和故障排除
+
+### 测试脚本
+
+项目提供了多个测试脚本来帮助诊断问题：
+
+1. **test-service.bat** - 测试后端服务基本功能
+2. **test-scan.bat** - 测试扫描功能（基础版本）
+3. **test-scan-safe.bat** - 测试扫描功能（安全版本，包含错误处理）
+
+### 常见问题排查
+
+#### 1. NullPointerException 错误
+
+**错误信息**: `java.lang.NullPointerException: null at com.hierynomus.ntlm.functions.NtlmFunctions.NTOWFv2`
+
+**可能原因**:
+- 密码为空或null
+- 认证信息不完整
+
+**解决方案**:
+- 确保密码不为空
+- 检查NetworkLocation对象中的密码设置
+- 使用正确的用户名和密码
+
+#### 2. 连接失败
+
+**错误信息**: `java.net.ConnectException`
+
+**可能原因**:
+- 网络连接问题
+- SMB服务未启动
+- 防火墙阻止
+
+**解决方案**:
+- 检查网络连接
+- 确认SMB服务正在运行
+- 检查防火墙设置
+- 验证IP地址和端口
+
+#### 3. 认证失败
+
+**错误信息**: 包含"authentication"的错误
+
+**可能原因**:
+- 用户名或密码错误
+- 用户权限不足
+- SMB版本不兼容
+
+**解决方案**:
+- 验证用户名和密码
+- 检查用户权限
+- 尝试不同的SMB版本
+
+#### 4. 数据库连接问题
+
+**错误信息**: 数据库相关错误
+
+**可能原因**:
+- 数据库服务未启动
+- 连接配置错误
+- 数据库权限问题
+
+**解决方案**:
+- 启动MySQL服务
+- 检查数据库连接配置
+- 验证数据库用户权限
+
+### 调试步骤
+
+1. **运行基础测试**:
+   ```bash
+   test-service.bat
+   ```
+
+2. **检查日志**:
+   - 查看后端控制台日志
+   - 检查错误信息和堆栈跟踪
+
+3. **验证网络连接**:
+   - 使用ping命令测试网络连通性
+   - 检查SMB共享是否可访问
+
+4. **测试扫描功能**:
+   ```bash
+   test-scan-safe.bat
+   ```
+
+### 日志级别
+
+可以在 `application.yml` 中调整日志级别：
+
+```yaml
+logging:
+  level:
+    com.example.computerweb: DEBUG  # 应用日志
+    org.mybatis: DEBUG              # SQL日志
+    com.hierynomus.smbj: DEBUG      # SMB日志
+```
+
 ## 开发说明
 
 - 使用FreeMarker作为服务端模板引擎
@@ -297,4 +544,55 @@ mvn spring-boot:run
 
 ## 许可证
 
-MIT License 
+MIT License
+
+## 接口参数变更说明
+
+### 版本更新：NetworkLocation对象 → networkLocationId整数
+
+为了提高接口性能和简化参数传递，所有后台接口已从使用NetworkLocation对象参数改为使用networkLocationId整数参数。
+
+#### 变更的接口：
+
+1. **获取分类统计信息** (`/smc/api/network-location/category-count`)
+   - 原参数：`{ "networkLocation": { "ip": "...", "name": "..." } }`
+   - 新参数：`{ "networkLocationId": 1 }`
+
+2. **获取文件夹列表** (`/smc/api/network-location/folder-list`)
+   - 原参数：`{ "networkLocation": { "ip": "...", "name": "..." }, "currentPath": "..." }`
+   - 新参数：`{ "networkLocationId": 1, "currentPath": "..." }`
+
+3. **获取分类文件列表** (`/smc/api/network-location/category-files`)
+   - 原参数：`{ "networkLocation": { "ip": "...", "name": "..." }, "type": "..." }`
+   - 新参数：`{ "networkLocationId": 1, "type": "..." }`
+
+4. **扫描网络位置** (`/smc/api/network-location/scan`)
+   - 原参数：`{ "networkLocation": { "ip": "...", "name": "...", "user": "...", "pwd": "..." } }`
+   - 新参数：`{ "networkLocationId": 1 }`
+
+5. **文件流式播放** (`/smc/api/network-location/stream`)
+   - 原参数：`?ip=...&shareName=...&filePath=...`
+   - 新参数：`?networkLocationId=1&filePath=...`
+
+#### 变更的好处：
+
+- ✅ **性能提升**：减少参数传递大小，提高网络传输效率
+- ✅ **简化逻辑**：后端直接通过ID查询数据库，无需复杂的对象匹配
+- ✅ **数据一致性**：确保使用数据库中的最新配置信息
+- ✅ **安全性**：避免前端传递敏感信息（如密码）
+
+#### 前端适配：
+
+前端组件已相应更新，使用`networkLocation.id`替代原来的`networkLocation`对象传递。
+
+#### 测试脚本更新：
+
+测试脚本已更新为使用新的参数格式：
+- `test-scan.bat`：使用`{"networkLocationId": 1}`
+- `test-scan-safe.bat`：使用`{"networkLocationId": 1}`
+
+#### 注意事项：
+
+1. 确保数据库中存在对应的网络位置记录
+2. 网络位置ID从1开始递增
+3. 前端需要确保传递的networkLocation对象包含id字段 

@@ -9,14 +9,181 @@
             parent_path AS parentPath,
             file_size AS fileSize,
             fileType,
-            network_share_location AS networkShareLocation,
+            network_location_id AS networkLocationId,
             last_modify AS lastModify,
             sync_time AS syncTime,
             statis_date AS statisDate,
             is_directory AS isDirectory
         FROM mss_file
-        WHERE network_share_location = #{networkShareLocation}
+        WHERE network_location_id = #{networkLocationId}
           AND parent_path = #{parentPath}
         ORDER BY is_directory DESC, file_name ASC
+    </select>
+    
+    <select id="selectByLocationAndFilePath" resultType="com.example.computerweb.entity.FolderItem">
+        SELECT 
+            id,
+            file_name AS fileName,
+            file_path AS filePath,
+            parent_path AS parentPath,
+            file_size AS fileSize,
+            fileType,
+            network_location_id AS networkLocationId,
+            last_modify AS lastModify,
+            sync_time AS syncTime,
+            statis_date AS statisDate,
+            is_directory AS isDirectory
+        FROM mss_file
+        WHERE network_location_id = #{networkLocationId}
+          AND file_path = #{filePath}
+        LIMIT 1
+    </select>
+    
+    <insert id="insertFolderItem" parameterType="com.example.computerweb.entity.FolderItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO mss_file (
+            file_name,
+            file_path,
+            parent_path,
+            file_size,
+            fileType,
+            network_location_id,
+            last_modify,
+            sync_time,
+            statis_date,
+            is_directory
+        ) VALUES (
+            #{fileName},
+            #{filePath},
+            #{parentPath},
+            #{fileSize},
+            #{fileType},
+            #{networkLocationId},
+            #{lastModify},
+            NOW(),
+            CURDATE(),
+            #{isDirectory}
+        )
+    </insert>
+    
+    <update id="updateFolderItem" parameterType="com.example.computerweb.entity.FolderItem">
+        UPDATE mss_file SET
+            file_name = #{fileName},
+            file_path = #{filePath},
+            parent_path = #{parentPath},
+            file_size = #{fileSize},
+            fileType = #{fileType},
+            last_modify = #{lastModify},
+            sync_time = NOW(),
+            statis_date = CURDATE(),
+            is_directory = #{isDirectory}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteByNetworkLocation">
+        DELETE FROM mss_file 
+        WHERE network_location_id = #{networkLocationId}
+    </delete>
+    
+    <select id="selectByNetworkLocation" resultType="com.example.computerweb.entity.FolderItem">
+        SELECT 
+            id,
+            file_name AS fileName,
+            file_path AS filePath,
+            parent_path AS parentPath,
+            file_size AS fileSize,
+            fileType,
+            network_location_id AS networkLocationId,
+            last_modify AS lastModify,
+            sync_time AS syncTime,
+            statis_date AS statisDate,
+            is_directory AS isDirectory
+        FROM mss_file
+        WHERE network_location_id = #{networkLocationId}
+    </select>
+    
+    <!-- 查询分类统计 -->
+    <select id="selectCategoryCount" resultType="com.example.computerweb.model.CategoryCount">
+        SELECT 
+            CASE 
+                WHEN fileType = 'VIDEO' THEN 'video'
+                WHEN fileType = 'IMAGE' THEN 'image'
+                WHEN fileType = 'DOCUMENT' THEN 'doc'
+                WHEN fileType = 'ZIP' THEN 'zip'
+                WHEN fileType = 'MUSIC' THEN 'music'
+                ELSE 'other'
+            END AS type,
+            CAST(COUNT(*) AS CHAR) AS count
+        FROM mss_file
+        WHERE network_location_id = #{networkLocationId}
+          AND is_directory = 0
+        GROUP BY 
+            CASE 
+                WHEN fileType = 'VIDEO' THEN 'video'
+                WHEN fileType = 'IMAGE' THEN 'image'
+                WHEN fileType = 'DOCUMENT' THEN 'doc'
+                WHEN fileType = 'ZIP' THEN 'zip'
+                WHEN fileType = 'MUSIC' THEN 'music'
+                ELSE 'other'
+            END
+        ORDER BY count DESC
+    </select>
+    
+    <!-- 查询指定分类的文件 -->
+    <select id="selectByLocationAndCategory" resultType="com.example.computerweb.entity.FolderItem">
+        SELECT 
+            id,
+            file_name AS fileName,
+            file_path AS filePath,
+            parent_path AS parentPath,
+            file_size AS fileSize,
+            fileType,
+            network_location_id AS networkLocationId,
+            last_modify AS lastModify,
+            sync_time AS syncTime,
+            statis_date AS statisDate,
+            is_directory AS isDirectory
+        FROM mss_file
+        WHERE network_location_id = #{networkLocationId}
+          AND is_directory = 0
+          AND fileType = #{fileType}
+        ORDER BY file_name ASC
+    </select>
+    
+    <!-- 分页+模糊搜索分类文件 -->
+    <select id="selectByLocationAndCategoryPaged" resultType="com.example.computerweb.entity.FolderItem">
+        SELECT 
+            id,
+            file_name AS fileName,
+            file_path AS filePath,
+            parent_path AS parentPath,
+            file_size AS fileSize,
+            fileType,
+            network_location_id AS networkLocationId,
+            last_modify AS lastModify,
+            sync_time AS syncTime,
+            statis_date AS statisDate,
+            is_directory AS isDirectory
+        FROM mss_file
+        WHERE network_location_id = #{networkLocationId}
+          AND is_directory = 0
+          <if test="fileType != null and fileType != ''">
+            AND fileType = #{fileType}
+          </if>
+          <if test="fileName != null and fileName != ''">
+            AND file_name LIKE CONCAT('%', #{fileName}, '%')
+          </if>
+        ORDER BY file_name ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+    <select id="countByLocationAndCategoryPaged" resultType="int">
+        SELECT COUNT(*) FROM mss_file
+        WHERE network_location_id = #{networkLocationId}
+          AND is_directory = 0
+          <if test="fileType != null and fileType != ''">
+            AND fileType = #{fileType}
+          </if>
+          <if test="fileName != null and fileName != ''">
+            AND file_name LIKE CONCAT('%', #{fileName}, '%')
+          </if>
     </select>
 </mapper> 

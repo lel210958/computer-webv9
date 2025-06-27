@@ -11,7 +11,7 @@ public class FolderItem {
     private String parentPath;
     private Long fileSize;
     private String fileType;
-    private String networkShareLocation;
+    private Integer networkLocationId;
     private Date lastModify;
     private Date syncTime;
     private Date statisDate;
@@ -76,12 +76,12 @@ public class FolderItem {
         this.fileType = fileType;
     }
 
-    public String getNetworkShareLocation() {
-        return networkShareLocation;
+    public Integer getNetworkLocationId() {
+        return networkLocationId;
     }
 
-    public void setNetworkShareLocation(String networkShareLocation) {
-        this.networkShareLocation = networkShareLocation;
+    public void setNetworkLocationId(Integer networkLocationId) {
+        this.networkLocationId = networkLocationId;
     }
 
     public Date getLastModify() {

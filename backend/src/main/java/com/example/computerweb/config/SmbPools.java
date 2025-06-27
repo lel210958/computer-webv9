@@ -30,13 +30,17 @@ public class SmbPools {
         public SmbSessionPool(String host, String user, String password) {
             this.host = host;
             this.user = user;
-            this.password = password;
+            // 确保密码不为null
+            this.password = password != null ? password : "";
         }
 
         @Override
         public Session create() throws Exception {
             Connection conn = client.connect(host);
-            return conn.authenticate(new AuthenticationContext(user, password.toCharArray(), ""));
+            // 确保密码不为null，如果为空字符串则使用null进行匿名认证
+            String safePassword = password != null && !password.trim().isEmpty() ? password : null;
+            char[] passwordChars = safePassword != null ? safePassword.toCharArray() : null;
+            return conn.authenticate(new AuthenticationContext(user, passwordChars, ""));
         }
 
         @Override

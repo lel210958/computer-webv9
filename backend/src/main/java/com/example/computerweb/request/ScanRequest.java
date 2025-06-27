@@ -1,11 +1,11 @@
 package com.example.computerweb.request;
 
-public class CategoryCountRequest {
+public class ScanRequest {
     private Integer networkLocationId;
 
-    public CategoryCountRequest() {}
+    public ScanRequest() {}
 
-    public CategoryCountRequest(Integer networkLocationId) {
+    public ScanRequest(Integer networkLocationId) {
         this.networkLocationId = networkLocationId;
     }
 

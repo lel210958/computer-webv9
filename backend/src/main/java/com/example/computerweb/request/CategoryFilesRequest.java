@@ -1,24 +1,25 @@
 package com.example.computerweb.request;
 
-import com.example.computerweb.model.NetworkLocation;
-
 public class CategoryFilesRequest {
-    private NetworkLocation networkLocation;
+    private Integer networkLocationId;
     private String type;
+    private String fileName;
+    private Integer pageNum;
+    private Integer pageSize;
 
     public CategoryFilesRequest() {}
 
-    public CategoryFilesRequest(NetworkLocation networkLocation, String type) {
-        this.networkLocation = networkLocation;
+    public CategoryFilesRequest(Integer networkLocationId, String type) {
+        this.networkLocationId = networkLocationId;
         this.type = type;
     }
 
-    public NetworkLocation getNetworkLocation() {
-        return networkLocation;
+    public Integer getNetworkLocationId() {
+        return networkLocationId;
     }
 
-    public void setNetworkLocation(NetworkLocation networkLocation) {
-        this.networkLocation = networkLocation;
+    public void setNetworkLocationId(Integer networkLocationId) {
+        this.networkLocationId = networkLocationId;
     }
 
     public String getType() {
@@ -27,5 +28,29 @@ public class CategoryFilesRequest {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public Integer getPageNum() {
+        return pageNum;
+    }
+
+    public void setPageNum(Integer pageNum) {
+        this.pageNum = pageNum;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
     }
 } 

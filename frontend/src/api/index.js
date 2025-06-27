@@ -37,41 +37,49 @@ export const networkAPI = {
     return api.get('/smc/api/network-locations')
   },
 
+  // 添加网络位置
+  addNetworkLocation(locationData) {
+    return api.post('/smc/api/network-location/add', locationData)
+  },
+
   // 获取分类统计信息
-  getCategoryCount(networkLocation) {
+  getCategoryCount(networkLocationId) {
     return api.post('/smc/api/network-location/category-count', {
-      networkLocation
+      networkLocationId
     })
   },
 
   // 获取文件夹列表
-  getFolderList(networkLocation, currentPath) {
+  getFolderList(networkLocationId, currentPath) {
     return api.post('/smc/api/network-location/folder-list', {
-      networkLocation,
+      networkLocationId,
       currentPath
     })
   },
 
   // 获取分类文件列表
-  getCategoryFiles(networkLocation, type) {
+  getCategoryFiles(networkLocationId, type, fileName = null, pageNum = 1, pageSize = 30) {
     return api.post('/smc/api/network-location/category-files', {
-      networkLocation,
-      type
+      networkLocationId,
+      type,
+      fileName,
+      pageNum,
+      pageSize
     })
   },
 
   // 获取文件播放URL
-  playFile(networkLocation, filePath) {
+  playFile(networkLocationId, filePath) {
     return api.post('/smc/api/network-location/play', {
-      networkLocation,
+      networkLocationId,
       filePath
     })
   },
 
   // 网络共享位置扫描
-  networkScan(networkLocation) {
+  networkScan(networkLocationId) {
     return api.post('/smc/api/network-location/scan', {
-      networkLocation
+      networkLocationId
     })
   }
 }

@@ -1,108 +1,115 @@
 <template>
   <div class="nas-demo">
-    <div class="nas-main">
-      <!-- 右侧内容区 -->
-      <div class="nas-content">
-        <div v-if="!currentLocation" class="empty-tip">请选择左侧网络位置</div>
-        <template v-else>
-          <!-- 分类统计标题（可折叠） -->
-          <div class="category-header" @click="toggleCategoryStats">
-            <div class="category-title">
-              <span class="collapse-icon">{{ isCategoryStatsCollapsed ? '▶' : '▼' }}</span>
-              分类
+    <div class="nas-content">
+      <div v-if="!currentLocation" class="empty-tip">请选择左侧网络位置</div>
+      <template v-else>
+        <!-- 分类统计标题（可折叠） -->
+        <div class="category-header" @click="toggleCategoryStats">
+          <div class="category-title">
+            <i class="bi" :class="isCategoryStatsCollapsed ? 'bi-chevron-right' : 'bi-chevron-down'"></i>
+            分类
+          </div>
+        </div>
+        
+        <!-- 文件分类统计信息 -->
+        <div v-show="!isCategoryStatsCollapsed" class="category-stats">
+          <div v-if="loadingCategoryStats" class="loading">正在加载分类统计...</div>
+          <div v-else-if="errorCategoryStats" class="error">{{ errorCategoryStats }}</div>
+          <div v-else-if="categoryStats.length === 0" class="loading">暂无分类统计信息</div>
+          <div v-else class="icon-view category-icon-view">
+            <div
+              v-for="category in categoryStats"
+              :key="category.type"
+              class="icon-card category-card"
+              @click="handleCategoryClick(category.type)"
+            >
+              <div class="icon-img">
+                <i :class="getCategoryIcon(category.type)"></i>
+              </div>
+              <div class="icon-name">{{ category.count }}</div>
             </div>
           </div>
-          
-          <!-- 文件分类统计信息 -->
-          <div v-show="!isCategoryStatsCollapsed" class="category-stats">
-            <div v-if="loadingCategoryStats" class="loading">正在加载分类统计...</div>
-            <div v-else-if="errorCategoryStats" class="error">{{ errorCategoryStats }}</div>
-            <div v-else-if="categoryStats.length === 0" class="loading">暂无分类统计信息</div>
-            <div v-else class="icon-view category-icon-view">
-              <div
-                v-for="category in categoryStats"
-                :key="category.type"
-                class="icon-card category-card"
-                @click="handleCategoryClick(category.type)"
-              >
-                <div class="icon-img">{{ getCategoryIcon(category.type) }}</div>
-                <div class="icon-name">{{ category.count }}</div>
-              </div>
-            </div>
+        </div>
+        
+        <!-- 文件目录标题（可折叠） -->
+        <div class="directory-header" @click="toggleDirectoryContent">
+          <div class="directory-title">
+            <i class="bi" :class="isDirectoryContentCollapsed ? 'bi-chevron-right' : 'bi-chevron-down'"></i>
+            文件目录
+          </div>
+        </div>
+        
+        <!-- 文件目录内容 -->
+        <div v-show="!isDirectoryContentCollapsed">
+          <!-- 面包屑 -->
+          <div class="nas-breadcrumb">
+            <span class="breadcrumb-item" @click="goRoot">根目录</span>
+            <template v-for="(seg, idx) in pathSegments" :key="idx">
+              <span v-if="idx >= 0"> / </span>
+              <span class="breadcrumb-item" @click="goToPath(idx)">{{ seg }}</span>
+            </template>
           </div>
           
-          <!-- 文件目录标题（可折叠） -->
-          <div class="directory-header" @click="toggleDirectoryContent">
-            <div class="directory-title">
-              <span class="collapse-icon">{{ isDirectoryContentCollapsed ? '▶' : '▼' }}</span>
-              文件目录
+          <!-- 视图切换和排序控件 -->
+          <div class="view-controls">
+            <div class="view-switch">
+              <button :class="{active:viewMode==='icon'}" @click="viewMode='icon'">图标视图</button>
+              <button :class="{active:viewMode==='list'}" @click="viewMode='list'">列表视图</button>
+            </div>
+            <div class="sort-controls">
+              <span class="sort-label">排序方式:</span>
+              <select v-model="sortField" class="sort-select">
+                <option value="name">名称</option>
+                <option value="time">时间</option>
+                <option value="size">大小</option>
+              </select>
+              <button class="sort-btn" @click="toggleSortOrder" :title="sortOrder==='asc'?'升序':'降序'">
+                <i class="bi" :class="sortOrder==='asc'?'bi-arrow-up':'bi-arrow-down'"></i>
+              </button>
             </div>
           </div>
-          
-          <!-- 文件目录内容 -->
-          <div v-show="!isDirectoryContentCollapsed">
-            <!-- 面包屑 -->
-            <div class="nas-breadcrumb">
-              <span class="breadcrumb-item" @click="goRoot">根目录</span>
-              <template v-for="(seg, idx) in pathSegments" :key="idx">
-                <span v-if="idx >= 0"> / </span>
-                <span class="breadcrumb-item" @click="goToPath(idx)">{{ seg }}</span>
-              </template>
-            </div>
-            
-            <!-- 视图切换和排序控件 -->
-            <div class="view-controls">
-              <div class="view-switch">
-                <button :class="{active:viewMode==='icon'}" @click="viewMode='icon'">图标视图</button>
-                <button :class="{active:viewMode==='list'}" @click="viewMode='list'">列表视图</button>
-              </div>
-              <div class="sort-controls">
-                <span class="sort-label">排序方式:</span>
-                <select v-model="sortField" class="sort-select">
-                  <option value="name">名称</option>
-                  <option value="time">时间</option>
-                  <option value="size">大小</option>
-                </select>
-                <button class="sort-btn" @click="toggleSortOrder" :title="sortOrder==='asc'?'升序':'降序'">
-                  {{ sortOrder==='asc'?'↑':'↓' }}
-                </button>
-              </div>
-            </div>
-            <!-- 内容展示 -->
-            <div v-if="loading" class="loading">正在加载...</div>
-            <div v-else-if="error" class="error">{{ error }}</div>
-            <div v-else-if="sortedContent.length === 0" class="loading">当前目录为空</div>
-            <div v-else>
-              <div v-if="viewMode==='icon'" class="icon-view">
-                <div v-for="item in sortedContent" :key="item.filePath" class="icon-card" @click="handleItemClick(item)">
-                  <div class="icon-img">{{ item.isDirectory == 1 ? '📂' : getFileIcon(item) }}</div>
-                  <div class="icon-name">{{ item.fileName }}</div>
+          <!-- 内容展示 -->
+          <div v-if="loading" class="loading">正在加载...</div>
+          <div v-else-if="error" class="error">{{ error }}</div>
+          <div v-else-if="sortedContent.length === 0" class="loading">当前目录为空</div>
+          <div v-else>
+            <div v-if="viewMode==='icon'" class="icon-view">
+              <div v-for="item in sortedContent" :key="item.filePath" class="icon-card" @click="handleItemClick(item)">
+                <div class="icon-img">
+                  <i :class="item.isDirectory == 1 ? 'bi bi-folder-fill' : getFileIcon(item)"></i>
                 </div>
+                <div class="icon-name">{{ item.fileName }}</div>
               </div>
-              <table v-else class="list-view">
-                <thead>
-                  <tr><th></th><th>名称</th><th>类型</th><th>大小</th></tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in sortedContent" :key="item.filePath" @click="handleItemClick(item)" style="cursor:pointer;">
-                    <td style="width:36px;text-align:center;">
-                      <span>{{ item.isDirectory == 1 ? '📂' : getFileIcon(item) }}</span>
-                    </td>
-                    <td>{{ item.fileName }}</td>
-                    <td>{{ item.isDirectory == 1 ? '文件夹' : '文件' }}</td>
-                    <td>{{ item.isDirectory == 1 ? '-' : formatFileSize(item.fileSize) }}</td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
+            <table v-else class="list-view">
+              <thead>
+                <tr><th></th><th>名称</th><th>类型</th><th>大小</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in sortedContent" :key="item.filePath" @click="handleItemClick(item)" style="cursor:pointer;">
+                  <td style="width:36px;text-align:center;">
+                    <i :class="item.isDirectory == 1 ? 'bi bi-folder-fill' : getFileIcon(item)"></i>
+                  </td>
+                  <td>{{ item.fileName }}</td>
+                  <td>{{ item.isDirectory == 1 ? '文件夹' : '文件' }}</td>
+                  <td>{{ item.isDirectory == 1 ? '-' : formatFileSize(item.fileSize) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
     </div>
     <div v-if="playUrl" class="play-modal">
-      <div class="play-close-btn" @click="playUrl=''">×</div>
-      <div class="play-arrow play-arrow-left" @click="playMediaAt(playIndex-1)" :class="{disabled: playIndex<=0}" v-if="playIndex>0"></div>
-      <div class="play-arrow play-arrow-right" @click="playMediaAt(playIndex+1)" :class="{disabled: playIndex >= sortedContent.filter(i=>i.fileType==='VIDEO'||i.fileType==='IMAGE').length-1}" v-if="playIndex < sortedContent.filter(i=>i.fileType==='VIDEO'||i.fileType==='IMAGE').length-1"></div>
+      <div class="play-close-btn" @click="playUrl=''">
+        <i class="bi bi-x-lg"></i>
+      </div>
+      <div class="play-arrow play-arrow-left" @click="playMediaAt(playIndex-1)" :class="{disabled: playIndex<=0}" v-if="playIndex>0">
+        <i class="bi bi-chevron-left"></i>
+      </div>
+      <div class="play-arrow play-arrow-right" @click="playMediaAt(playIndex+1)" :class="{disabled: playIndex >= sortedContent.filter(i=>i.fileType==='VIDEO'||i.fileType==='IMAGE').length-1}" v-if="playIndex < sortedContent.filter(i=>i.fileType==='VIDEO'||i.fileType==='IMAGE').length-1">
+        <i class="bi bi-chevron-right"></i>
+      </div>
       <video v-if="playType==='VIDEO'" :src="playUrl" controls autoplay></video>
       <img v-else-if="playType==='IMAGE'" :src="playUrl" />
     </div>
@@ -110,20 +117,22 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { networkAPI } from '../api'
 
 export default {
   name: 'NasExplorerDemo',
-  setup() {
+  props: {
+    currentLocation: {
+      type: Object,
+      default: null
+    }
+  },
+  setup(props) {
     const router = useRouter()
     
-    // 网络位置数据
-    const networkLocations = ref([])
-    const loadingLocations = ref(true)
-    const errorLocations = ref(null)
-    const currentLocation = ref(null)
+    // 文件目录数据
     const currentPath = ref('')
     const viewMode = ref('icon')
     const contentData = ref([])
@@ -178,31 +187,6 @@ export default {
     const toggleSortOrder = () => {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
     }
-    // 加载网络位置
-    const loadNetworkLocations = async () => {
-      try {
-        loadingLocations.value = true
-        errorLocations.value = null
-        const data = await networkAPI.getNetworkLocations()
-        networkLocations.value = data.networkLocationList || []
-        // 默认选择第一个
-        if (networkLocations.value.length > 0) {
-          currentLocation.value = networkLocations.value[0]
-        } else {
-          currentLocation.value = null
-        }
-      } catch (err) {
-        errorLocations.value = '加载网络位置失败'
-        networkLocations.value = []
-        currentLocation.value = null
-      } finally {
-        loadingLocations.value = false
-      }
-    }
-
-    onMounted(() => {
-      loadNetworkLocations()
-    })
 
     // 目录分段
     const pathSegments = computed(() => {
@@ -211,14 +195,6 @@ export default {
       return currentPath.value.replaceAll('\\', '/').split('/').filter(Boolean)
     })
 
-    // 选中网络位置
-    const selectLocation = (loc) => {
-      currentLocation.value = loc
-      currentPath.value = ''
-    }
-    const isActive = (loc) => {
-      return currentLocation.value && loc.ip === currentLocation.value.ip && loc.name === currentLocation.value.name
-    }
     // 根目录
     const goRoot = () => {
       currentPath.value = ''
@@ -235,7 +211,7 @@ export default {
       if (idx < 0 || idx >= mediaItems.length) return
       const item = mediaItems[idx]
       const filePathParam = encodeURIComponent(item.filePath)
-      const playUrlStr = `/api/smc/api/network-location/stream?ip=${currentLocation.value.ip}&shareName=${encodeURIComponent(currentLocation.value.name)}&filePath=${filePathParam}`
+      const playUrlStr = `/api/smc/api/network-location/stream?networkLocationId=${props.currentLocation.id}&filePath=${filePathParam}`
       playUrl.value = playUrlStr
       playType.value = item.fileType
       playIndex.value = idx
@@ -256,17 +232,17 @@ export default {
     // 文件类型图标
     const getFileIcon = (item) => {
       const iconMap = {
-        'VIDEO': '🎥',
-        'IMAGE': '🖼️',
-        'DOCUMENT': '📄',
-        'MUSIC': '🎵',
-        'ZIP': '🗜️'
+        'VIDEO': 'bi bi-camera-video-fill',
+        'IMAGE': 'bi bi-image-fill',
+        'DOCUMENT': 'bi bi-file-earmark-text-fill',
+        'MUSIC': 'bi bi-music-note-beamed',
+        'ZIP': 'bi bi-file-earmark-zip-fill'
       }
-      return iconMap[item.fileType] || '📄'
+      return iconMap[item.fileType] || 'bi bi-file-earmark-fill'
     }
     // 加载目录内容
     const loadContent = async () => {
-      if (!currentLocation.value) {
+      if (!props.currentLocation) {
         contentData.value = []
         return
       }
@@ -274,7 +250,7 @@ export default {
       error.value = null
       try {
         const data = await networkAPI.getFolderList(
-          { ip: currentLocation.value.ip, name: currentLocation.value.name },
+          props.currentLocation.id,
           currentPath.value
         )
         contentData.value = data.folderList || []
@@ -288,7 +264,7 @@ export default {
     
     // 加载分类统计信息
     const loadCategoryStats = async () => {
-      if (!currentLocation.value) {
+      if (!props.currentLocation) {
         categoryStats.value = []
         return
       }
@@ -296,10 +272,7 @@ export default {
       try {
         loadingCategoryStats.value = true
         errorCategoryStats.value = null
-        const data = await networkAPI.getCategoryCount({
-          ip: currentLocation.value.ip,
-          name: currentLocation.value.name
-        })
+        const data = await networkAPI.getCategoryCount(props.currentLocation.id)
         categoryStats.value = data.categoryCount || []
       } catch (err) {
         errorCategoryStats.value = '加载分类统计失败'
@@ -313,13 +286,13 @@ export default {
     // 获取分类图标
     const getCategoryIcon = (type) => {
       const iconMap = {
-        'video': '🎥',
-        'image': '🖼️',
-        'doc': '📄',
-        'zip': '🗜️',
-        'music': '🎵'
+        'video': 'bi bi-camera-video-fill',
+        'image': 'bi bi-image-fill',
+        'doc': 'bi bi-file-earmark-text-fill',
+        'zip': 'bi bi-file-earmark-zip-fill',
+        'music': 'bi bi-music-note-beamed'
       }
-      return iconMap[type] || '📁'
+      return iconMap[type] || 'bi bi-folder-fill'
     }
     
     // 获取分类名称
@@ -345,14 +318,19 @@ export default {
       }
       return `${fileSize.toFixed(1)} ${units[index]}`
     }
+    
     // 监听网络位置和路径变化
-    watch([currentLocation, currentPath], () => {
-      loadContent()
+    watch([() => props.currentLocation, currentPath], () => {
+      if (props.currentLocation) {
+        loadContent()
+      }
     }, { immediate: true })
     
     // 监听网络位置变化，加载分类统计
-    watch(currentLocation, () => {
-      loadCategoryStats()
+    watch(() => props.currentLocation, (newLocation, oldLocation) => {
+      if (newLocation && (!oldLocation || newLocation.id !== oldLocation.id)) {
+        loadCategoryStats()
+      }
     }, { immediate: true })
 
     const toggleCategoryStats = () => {
@@ -364,34 +342,27 @@ export default {
     }
 
     const handleCategoryClick = async (type) => {
-      if (!currentLocation.value) return
+      if (!props.currentLocation) return
       
-      // 跳转到分类文件页面，使用查询参数
+      // 无刷切换到分类页面，使用路由参数
       router.push({
         path: '/category',
         query: {
           type: type,
           location: JSON.stringify({
-            ip: currentLocation.value.ip,
-            name: currentLocation.value.name
+            id: props.currentLocation.id
           })
         }
       })
     }
 
     return {
-      networkLocations,
-      loadingLocations,
-      errorLocations,
-      currentLocation,
       currentPath,
       viewMode,
       contentData,
       loading,
       error,
       pathSegments,
-      selectLocation,
-      isActive,
       goRoot,
       goToPath,
       handleItemClick,
@@ -421,22 +392,22 @@ export default {
 </script>
 
 <style scoped>
+/* 引入Bootstrap Icons */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
 .nas-demo {
-  height: 100vh;
+  height: 100%;
   background: #f3f6fb;
   display: flex;
   flex-direction: column;
 }
-.nas-main {
-  flex: 1;
-  display: flex;
-  min-height: 0;
-}
+
 .nas-content {
   flex: 1;
   padding: 24px 32px;
   overflow-y: auto;
 }
+
 .nas-breadcrumb {
   margin-bottom: 18px;
   font-size: 1em;
@@ -506,6 +477,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 48px;
+  color: #1976d2;
 }
 .icon-name {
   font-size: 1em;
@@ -620,8 +592,6 @@ export default {
 }
 .play-arrow-left { left: 24px; }
 .play-arrow-right { right: 24px; }
-.play-arrow-left::after { content: '<'; font-size: 1em; font-weight: bold; }
-.play-arrow-right::after { content: '>'; font-size: 1em; font-weight: bold; }
 .play-arrow:hover, .play-close-btn:hover { color: #1976d2 !important; }
 .play-arrow.disabled { opacity: 0.15; pointer-events: none; }
 .sort-controls {
@@ -698,6 +668,7 @@ export default {
   font-size: 2.6em;
   height: 52px;
   margin-bottom: 10px;
+  color: #1976d2;
 }
 
 .category-card .icon-name {
@@ -737,7 +708,7 @@ export default {
   color: #0d47a1;
 }
 
-.collapse-icon {
+.category-title i, .directory-title i {
   font-size: 0.9em;
   color: #1976d2;
   font-weight: bold;

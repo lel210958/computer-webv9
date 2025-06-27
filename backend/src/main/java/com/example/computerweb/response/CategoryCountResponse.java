@@ -1,27 +1,26 @@
 package com.example.computerweb.response;
 
 import com.example.computerweb.model.CategoryCount;
-import com.example.computerweb.model.NetworkLocation;
 
 import java.util.List;
 
 public class CategoryCountResponse {
-    private NetworkLocation networkLocation;
+    private Integer networkLocationId;
     private List<CategoryCount> categoryCount;
 
     public CategoryCountResponse() {}
 
-    public CategoryCountResponse(NetworkLocation networkLocation, List<CategoryCount> categoryCount) {
-        this.networkLocation = networkLocation;
+    public CategoryCountResponse(Integer networkLocationId, List<CategoryCount> categoryCount) {
+        this.networkLocationId = networkLocationId;
         this.categoryCount = categoryCount;
     }
 
-    public NetworkLocation getNetworkLocation() {
-        return networkLocation;
+    public Integer getNetworkLocationId() {
+        return networkLocationId;
     }
 
-    public void setNetworkLocation(NetworkLocation networkLocation) {
-        this.networkLocation = networkLocation;
+    public void setNetworkLocationId(Integer networkLocationId) {
+        this.networkLocationId = networkLocationId;
     }
 
     public List<CategoryCount> getCategoryCount() {

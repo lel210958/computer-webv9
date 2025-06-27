@@ -1,27 +1,26 @@
 package com.example.computerweb.response;
 
 import com.example.computerweb.entity.FolderItem;
-import com.example.computerweb.model.NetworkLocation;
 
 import java.util.List;
 
 public class FolderListResponse {
-    private NetworkLocation networkLocation;
+    private Integer networkLocationId;
     private List<FolderItem> folderList;
 
     public FolderListResponse() {}
 
-    public FolderListResponse(NetworkLocation networkLocation, List<FolderItem> folderList) {
-        this.networkLocation = networkLocation;
+    public FolderListResponse(Integer networkLocationId, List<FolderItem> folderList) {
+        this.networkLocationId = networkLocationId;
         this.folderList = folderList;
     }
 
-    public NetworkLocation getNetworkLocation() {
-        return networkLocation;
+    public Integer getNetworkLocationId() {
+        return networkLocationId;
     }
 
-    public void setNetworkLocation(NetworkLocation networkLocation) {
-        this.networkLocation = networkLocation;
+    public void setNetworkLocationId(Integer networkLocationId) {
+        this.networkLocationId = networkLocationId;
     }
 
     public List<FolderItem> getFolderList() {
